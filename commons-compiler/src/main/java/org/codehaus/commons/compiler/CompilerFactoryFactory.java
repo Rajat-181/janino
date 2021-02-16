@@ -56,10 +56,22 @@ class CompilerFactoryFactory {
         if (CompilerFactoryFactory.defaultCompilerFactory != null) {
             return CompilerFactoryFactory.defaultCompilerFactory;
         }
+
+        InputStream is;
+
+        ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(Thread.currentThread().getClass().getClassLoader());
+            is = Thread.currentThread().getContextClassLoader().getResourceAsStream(
+                    "org.codehaus.commons.compiler.properties"
+            );
+            // call some API that uses reflection without taking ClassLoader param
+        } finally {
+            Thread.currentThread().setContextClassLoader(originalClassLoader);
+        }
+
         Properties  properties = new Properties();
-        InputStream is         = Thread.currentThread().getContextClassLoader().getResourceAsStream(
-            "org.codehaus.commons.compiler.properties"
-        );
+
         if (is == null) {
             throw new ClassNotFoundException(
                 "No implementation of org.codehaus.commons.compiler is on the class path. Typically, you'd have "
